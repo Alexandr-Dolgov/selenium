@@ -1,5 +1,6 @@
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.support.ui.ExpectedCondition
 import org.openqa.selenium.support.ui.WebDriverWait
 
@@ -98,6 +99,42 @@ class GitHubTest {
                 return d.title == "Issues · $login/$repositoryName".toString()
             }
         })
+    }
+
+    List<String> getAllOpenIssues() {
+//        login = 'grails'
+//        repositoryName = 'grails-core'
+//        driver.get("https://github.com/$login/$repositoryName/issues")
+//        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+//            Boolean apply(WebDriver d) {
+//                return d.title == "Issues · $login/$repositoryName".toString()
+//            }
+//        })
+
+        List<String> res = openIssuesInCurrentPage
+
+        WebElement el
+        while (el = driver.findElements(By.cssSelector("a.next_page"))[0]) {
+            int nextPageNum = driver.findElement(By.cssSelector("em.current")).text.toInteger() + 1
+            el.click()
+
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                Boolean apply(WebDriver d) {
+                    return d.findElement(By.cssSelector("em.current")).text.toInteger() == nextPageNum
+                }
+            })
+
+            res += this.openIssuesInCurrentPage
+        }
+
+        assert res.size() == driver.findElement(By.cssSelector("a[href^='/$login'][href\$='/issues']"))
+                .findElement(By.cssSelector("span.counter")).text.toInteger()
+
+        return res
+    }
+
+    List<String> getOpenIssuesInCurrentPage() {
+        return driver.findElements(By.cssSelector("a.issue-title-link"))*.getAttribute('href')
     }
 
 }

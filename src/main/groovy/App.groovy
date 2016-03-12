@@ -29,6 +29,8 @@ class App {
         github.openIssuesPage()
 
         //7. Найти все открытые
+        List<String> allOpenIssues = github.allOpenIssues
+
         //8. Закрыть все по очереди
         //9. Создать 5 новых
         //10. Найти все открытые
