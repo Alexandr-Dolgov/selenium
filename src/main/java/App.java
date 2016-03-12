@@ -14,11 +14,9 @@ public class App {
         System.setProperty("webdriver.chrome.driver", "chromedriver");
         WebDriver driver = new ChromeDriver();
 
-        // And now use this to visit Google
-        driver.get("http://www.google.com");
-        // Alternatively the same thing can be done like this
-        // driver.navigate().to("http://www.google.com");
+        signIn(driver);
 
+        /*
         // Find the text input element by its name
         WebElement element = driver.findElement(By.name("q"));
 
@@ -41,9 +39,18 @@ public class App {
 
         // Should see: "cheese! - Google Search"
         System.out.println("Page title is: " + driver.getTitle());
+        */
 
         //Close the browser
         driver.quit();
+    }
+
+    private static void signIn(WebDriver driver) {
+        driver.get("https://github.com/");
+        WebElement element = driver.findElement(By.linkText("Sign in"));
+        element.click();
+
+        System.out.println("test");
     }
 
 }
