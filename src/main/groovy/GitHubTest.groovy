@@ -6,12 +6,13 @@ import org.openqa.selenium.support.ui.WebDriverWait
 class GitHubTest {
 
     private WebDriver driver
-    private String login    //login in lower case
+    private String login
     private String password
+    private String repositoryName = ''
 
     GitHubTest(WebDriver driver, String login, String password) {
         this.driver = driver
-        this.login = login.toLowerCase()
+        this.login = login
         this.password = password
     }
 
@@ -53,18 +54,50 @@ class GitHubTest {
 
         (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
             Boolean apply(WebDriver d) {
-                return d.title.toLowerCase().startsWith(login)
+                return d.title.startsWith(login)
             }
         })
     }
 
 
     void checkUserName() {
-        assert driver.findElement(By.cssSelector("div.vcard-username")).text.toLowerCase() == login
+        assert driver.findElement(By.cssSelector("div.vcard-username")).text == login
     }
 
     void checkFullName(String expectedFullName) {
         assert driver.findElement(By.cssSelector("div.vcard-fullname")).text == expectedFullName
+    }
+
+    void openRepositoriesPage() {
+        driver.findElement(By.cssSelector("a[href*='tab=repositories']")).click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.findElements(By.cssSelector('div.repo-tab')).size() == 1
+            }
+        })
+    }
+
+    void openRepository(String repositoryName) {
+        this.repositoryName = repositoryName
+
+        driver.findElement(By.cssSelector("a[href='/$login/$repositoryName']")).click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.title == "$login/$repositoryName".toString()
+            }
+        })
+    }
+
+    void openIssuesPage() {
+        driver.findElement(By.cssSelector("a[href^='/$login'][href\$='/issues']")).click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.title == "Issues · $login/$repositoryName".toString()
+            }
+        })
     }
 
 }
