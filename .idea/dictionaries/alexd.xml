@@ -2,6 +2,11 @@
   <dictionary name="alexd">
     <words>
       <w>chromedriver</w>
+      <w>dolgov</w>
+      <w>fullname</w>
+      <w>github</w>
+      <w>tooltipped</w>
+      <w>vcard</w>
       <w>webdriver</w>
     </words>
   </dictionary>
