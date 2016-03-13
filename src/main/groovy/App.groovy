@@ -35,6 +35,8 @@ class App {
         github.closeAllIssues(allOpenIssues)
 
         //9. Создать 5 новых
+        5.times { github.createNewIssue() }
+
         //10. Найти все открытые
         //11. Выбрать один по имени и прокомментировать его
         //12. Выйти

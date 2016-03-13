@@ -1,8 +1,11 @@
 import org.openqa.selenium.By
+import org.openqa.selenium.Keys
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.support.ui.ExpectedCondition
 import org.openqa.selenium.support.ui.WebDriverWait
+
+import java.text.SimpleDateFormat
 
 class GitHubTest {
 
@@ -159,10 +162,39 @@ class GitHubTest {
 
             (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
                 Boolean apply(WebDriver d) {
-                    return d.findElements(By.cssSelector("div.state-closed")).size() == 1
+                    if (d.findElements(By.cssSelector("div.state-closed")).size() == 1) {
+                        return true
+                    } else {
+                        d.navigate().refresh()
+                        return false
+                    }
                 }
             })
         }
+
+        openIssuesPage()
+    }
+
+    void createNewIssue() {
+        driver.findElement(By.cssSelector("a.btn.btn-primary[href='/$login/$repositoryName/issues/new']")).click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.title == "New Issue · $login/$repositoryName".toString()
+            }
+        })
+
+        String issueName = new SimpleDateFormat('yyyy.MM.dd HH:mm:ss.SSS').format(new Date())
+
+        driver.findElement(By.cssSelector("input[name='issue[title]']")).sendKeys(issueName + Keys.ENTER)
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.title.startsWith("$issueName · Issue")
+            }
+        })
+
+        openIssuesPage()
     }
 
 }
