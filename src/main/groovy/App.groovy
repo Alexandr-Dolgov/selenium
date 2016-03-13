@@ -32,6 +32,8 @@ class App {
         List<String> allOpenIssues = github.allOpenIssues
 
         //8. Закрыть все по очереди
+        github.closeAllIssues(allOpenIssues)
+
         //9. Создать 5 новых
         //10. Найти все открытые
         //11. Выбрать один по имени и прокомментировать его

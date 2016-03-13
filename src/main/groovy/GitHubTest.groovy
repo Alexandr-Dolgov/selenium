@@ -118,7 +118,7 @@ class GitHubTest {
             int nextPageNum = driver.findElement(By.cssSelector("em.current")).text.toInteger() + 1
             el.click()
 
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
                 Boolean apply(WebDriver d) {
                     return d.findElement(By.cssSelector("em.current")).text.toInteger() == nextPageNum
                 }
@@ -127,6 +127,8 @@ class GitHubTest {
             res += this.openIssuesInCurrentPage
         }
 
+        //проверяем что количество найденных issues соостветствует отображаемому количеству issues
+        //здесь может быть проблема если новая issue создастся после завершения поиска, но до assert
         assert res.size() == driver.findElement(By.cssSelector("a[href^='/$login'][href\$='/issues']"))
                 .findElement(By.cssSelector("span.counter")).text.toInteger()
 
@@ -135,6 +137,32 @@ class GitHubTest {
 
     List<String> getOpenIssuesInCurrentPage() {
         return driver.findElements(By.cssSelector("a.issue-title-link"))*.getAttribute('href')
+    }
+
+    void closeAllIssues(List<String> issuesLinks) {
+        if (issuesLinks.size() == 0) {
+            println('нет ни одного открытого issue')
+            return
+        }
+
+        issuesLinks.each { String issueLink ->
+            driver.get(issueLink)
+            int issuesId = issueLink.split('/').last().toInteger()
+
+            (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+                Boolean apply(WebDriver d) {
+                    return d.title.endsWith("Issue #$issuesId · $login/$repositoryName")
+                }
+            })
+
+            driver.findElement(By.cssSelector("button[name='comment_and_close']")).click()
+
+            (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+                Boolean apply(WebDriver d) {
+                    return d.findElements(By.cssSelector("div.state-closed")).size() == 1
+                }
+            })
+        }
     }
 
 }
