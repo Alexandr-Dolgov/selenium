@@ -104,7 +104,7 @@ class GitHubTest {
         })
     }
 
-    List<String> getAllOpenIssues() {
+    List<Issue> getAllOpenIssues() {
 //        login = 'grails'
 //        repositoryName = 'grails-core'
 //        driver.get("https://github.com/$login/$repositoryName/issues")
@@ -114,7 +114,7 @@ class GitHubTest {
 //            }
 //        })
 
-        List<String> res = openIssuesInCurrentPage
+        List<Issue> res = openIssuesInCurrentPage
 
         WebElement el
         while (el = driver.findElements(By.cssSelector("a.next_page"))[0]) {
@@ -138,17 +138,23 @@ class GitHubTest {
         return res
     }
 
-    List<String> getOpenIssuesInCurrentPage() {
-        return driver.findElements(By.cssSelector("a.issue-title-link"))*.getAttribute('href')
+    List<Issue> getOpenIssuesInCurrentPage() {
+        return driver.findElements(By.cssSelector("a.issue-title-link")).collect { element ->
+            def issue = new Issue()
+            issue.url = element.getAttribute('href')
+            issue.title = element.text
+            return issue
+        }
     }
 
-    void closeAllIssues(List<String> issuesLinks) {
-        if (issuesLinks.size() == 0) {
+    void closeAllIssues(List<Issue> issues) {
+        if (issues.size() == 0) {
             println('нет ни одного открытого issue')
             return
         }
 
-        issuesLinks.each { String issueLink ->
+        issues.each { Issue issue ->
+            String issueLink = issue.url
             driver.get(issueLink)
             int issuesId = issueLink.split('/').last().toInteger()
 
@@ -175,7 +181,7 @@ class GitHubTest {
         openIssuesPage()
     }
 
-    void createNewIssue() {
+    void createNewIssue(String issueName) {
         driver.findElement(By.cssSelector("a.btn.btn-primary[href='/$login/$repositoryName/issues/new']")).click()
 
         (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
@@ -183,8 +189,6 @@ class GitHubTest {
                 return d.title == "New Issue · $login/$repositoryName".toString()
             }
         })
-
-        String issueName = new SimpleDateFormat('yyyy.MM.dd HH:mm:ss.SSS').format(new Date())
 
         driver.findElement(By.cssSelector("input[name='issue[title]']")).sendKeys(issueName + Keys.ENTER)
 
@@ -195,6 +199,47 @@ class GitHubTest {
         })
 
         openIssuesPage()
+    }
+
+    void commentIssue(List<Issue> issues, String issueName, String comment) {
+        Issue issue = issues.find { it.title == issueName}
+        if (issue == null) {
+            println("issue с именем $issueName не найдено")
+        }
+
+        String issueLink = issue.url
+        driver.get(issueLink)
+
+        //убедиться что нужная страница открылась
+        int issuesId = issueLink.split('/').last().toInteger()
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.title.endsWith("Issue #$issuesId · $login/$repositoryName")
+            }
+        })
+
+        WebElement element = driver.findElement(By.cssSelector("textarea[name='comment[body]']"))
+        element.sendKeys(comment + Keys.CONTROL + Keys.ENTER)
+    }
+
+    void signOut() {
+        driver.findElement(By.cssSelector("ul#user-links.header-nav.user-nav.right"))
+                .findElement(By.cssSelector("a.header-nav-link.tooltipped[aria-label='View profile and more']"))
+                .click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.findElements(By.cssSelector("form.logout-form")).size() == 1
+            }
+        })
+
+        driver.findElement(By.cssSelector("form.logout-form")).click()
+
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            Boolean apply(WebDriver d) {
+                return d.currentUrl == 'https://github.com/'
+            }
+        })
     }
 
 }

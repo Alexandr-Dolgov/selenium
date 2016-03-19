@@ -29,18 +29,24 @@ class App {
         github.openIssuesPage()
 
         //7. Найти все открытые
-        List<String> allOpenIssues = github.allOpenIssues
+        List<Issue> allOpenIssues = github.allOpenIssues
 
         //8. Закрыть все по очереди
         github.closeAllIssues(allOpenIssues)
 
         //9. Создать 5 новых
-        5.times { github.createNewIssue() }
+        5.times { github.createNewIssue(it.toString()) }
 
         //10. Найти все открытые
-        //11. Выбрать один по имени и прокомментировать его
-        //12. Выйти
+        allOpenIssues = github.allOpenIssues
 
+        //11. Выбрать один по имени и прокомментировать его
+        String issueName = '2'
+        String comment = 'hello'
+        github.commentIssue(allOpenIssues, issueName, comment)
+
+        //12. Выйти
+        github.signOut()
 
         driver.quit()
     }
